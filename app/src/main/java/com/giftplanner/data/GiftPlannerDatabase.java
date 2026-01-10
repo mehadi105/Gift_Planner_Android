@@ -6,18 +6,26 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import androidx.annotation.NonNull;
+import com.giftplanner.data.dao.PasswordResetOtpDao;
+import com.giftplanner.data.dao.PersonDao;
 import com.giftplanner.data.dao.UserDao;
+import com.giftplanner.data.entity.PasswordResetOtp;
+import com.giftplanner.data.entity.Person;
 import com.giftplanner.data.entity.User;
 
 @Database(
     entities = {
-        User.class
+        User.class,
+        Person.class,
+        PasswordResetOtp.class
     },
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 public abstract class GiftPlannerDatabase extends RoomDatabase {
     public abstract UserDao userDao();
+    public abstract PersonDao personDao();
+    public abstract PasswordResetOtpDao passwordResetOtpDao();
 
     private static volatile GiftPlannerDatabase INSTANCE;
 

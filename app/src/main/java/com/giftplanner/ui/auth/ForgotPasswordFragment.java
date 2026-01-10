@@ -1,6 +1,8 @@
 package com.giftplanner.ui.auth;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,18 +17,17 @@ import androidx.navigation.Navigation;
 import com.giftplanner.GiftPlannerApplication;
 import com.giftplanner.R;
 import com.giftplanner.data.repository.AuthRepository;
-import com.giftplanner.databinding.FragmentLoginBinding;
+import com.giftplanner.databinding.FragmentForgotPasswordBinding;
 import com.giftplanner.ui.viewmodel.AuthViewModel;
 import com.giftplanner.ui.viewmodel.AuthViewModelFactory;
 
-public class LoginFragment extends Fragment {
-    private FragmentLoginBinding binding;
+public class ForgotPasswordFragment extends Fragment {
+    private FragmentForgotPasswordBinding binding;
     private AuthViewModel viewModel;
-    private GiftPlannerApplication app;
     
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentLoginBinding.inflate(inflater, container, false);
+        binding = FragmentForgotPasswordBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
     
@@ -34,13 +35,14 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
-        app = (GiftPlannerApplication) requireActivity().getApplication();
+        GiftPlannerApplication app = (GiftPlannerApplication) requireActivity().getApplication();
         AuthRepository authRepository = new AuthRepository(
             app.getDatabase().userDao(),
             app.getDatabase().passwordResetOtpDao()
         );
         
-        viewModel = new ViewModelProvider(this, new AuthViewModelFactory(authRepository))
+        // Use activity scope to share ViewModel with ResetPasswordFragment
+        viewModel = new ViewModelProvider(requireActivity(), new AuthViewModelFactory(authRepository))
             .get(AuthViewModel.class);
         
         setupListeners();
@@ -48,18 +50,13 @@ public class LoginFragment extends Fragment {
     }
     
     private void setupListeners() {
-        binding.btnLogin.setOnClickListener(v -> {
-            String username = binding.etUsername.getText().toString();
-            String password = binding.etPassword.getText().toString();
-            viewModel.login(username, password);
+        binding.btnSendOtp.setOnClickListener(v -> {
+            String email = binding.etEmail.getText().toString();
+            viewModel.sendOtp(email);
         });
         
-        binding.tvRegister.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_loginFragment_to_registerFragment)
-        );
-        
-        binding.tvForgotPassword.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+        binding.tvBackToLogin.setOnClickListener(v -> 
+            Navigation.findNavController(v).navigateUp()
         );
     }
     
@@ -69,23 +66,27 @@ public class LoginFragment extends Fragment {
             
             if ("LOADING".equals(type)) {
                 binding.progressBar.setVisibility(View.VISIBLE);
-                binding.btnLogin.setEnabled(false);
-            } else if ("LOGIN_SUCCESS".equals(type)) {
+                binding.btnSendOtp.setEnabled(false);
+            } else if ("OTP_SENT".equals(type)) {
                 binding.progressBar.setVisibility(View.GONE);
-                binding.btnLogin.setEnabled(true);
+                binding.btnSendOtp.setEnabled(true);
+                Toast.makeText(requireContext(), R.string.otp_sent, Toast.LENGTH_LONG).show();
                 
-                // Save session
-                app.getSessionManager().saveUserId(state.getUserId());
-                Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show();
-                // TODO: Navigate to dashboard when implemented
+                // Navigate to reset password after 2 seconds
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (isAdded()) {
+                        Navigation.findNavController(requireView())
+                            .navigate(R.id.action_forgotPasswordFragment_to_resetPasswordFragment);
+                    }
+                }, 2000);
             } else if ("ERROR".equals(type)) {
                 binding.progressBar.setVisibility(View.GONE);
-                binding.btnLogin.setEnabled(true);
+                binding.btnSendOtp.setEnabled(true);
                 Toast.makeText(requireContext(), state.getMessage(), Toast.LENGTH_SHORT).show();
                 viewModel.resetState();
             } else {
                 binding.progressBar.setVisibility(View.GONE);
-                binding.btnLogin.setEnabled(true);
+                binding.btnSendOtp.setEnabled(true);
             }
         });
     }

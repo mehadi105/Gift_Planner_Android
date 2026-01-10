@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 public class AuthViewModel extends ViewModel {
     private final AuthRepository authRepository;
     private final MutableLiveData<AuthState> authState = new MutableLiveData<>(AuthState.IDLE);
+    private final MutableLiveData<String> otpEmail = new MutableLiveData<>("");
     
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
         "[a-zA-Z0-9._-]+@[a-z]+\\.[a-z]+"
@@ -23,6 +24,10 @@ public class AuthViewModel extends ViewModel {
     
     public LiveData<AuthState> getAuthState() {
         return authState;
+    }
+    
+    public LiveData<String> getOtpEmail() {
+        return otpEmail;
     }
     
     public void register(String username, String email, String password, String confirmPassword) {
@@ -84,6 +89,68 @@ public class AuthViewModel extends ViewModel {
         });
     }
     
+    public void sendOtp(String email) {
+        authState.setValue(AuthState.LOADING);
+        
+        if (email.trim().isEmpty()) {
+            authState.setValue(AuthState.error("Email is required"));
+            return;
+        }
+        
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            authState.setValue(AuthState.error("Invalid email format"));
+            return;
+        }
+        
+        authRepository.generateOtp(email, new AuthRepository.RepositoryCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                otpEmail.postValue(email);
+                authState.postValue(AuthState.OTP_SENT);
+            }
+            
+            @Override
+            public void onError(Exception e) {
+                authState.postValue(AuthState.error(e.getMessage()));
+            }
+        });
+    }
+    
+    public void resetPassword(String otp, String newPassword, String confirmPassword) {
+        authState.setValue(AuthState.LOADING);
+        
+        String email = otpEmail.getValue();
+        if (email == null || email.isEmpty()) {
+            authState.setValue(AuthState.error("Invalid session"));
+            return;
+        }
+        
+        // Validation
+        if (otp.trim().isEmpty()) {
+            authState.setValue(AuthState.error("OTP is required"));
+            return;
+        }
+        if (newPassword.length() < 4) {
+            authState.setValue(AuthState.error("Password must be at least 4 characters"));
+            return;
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            authState.setValue(AuthState.error("Passwords do not match"));
+            return;
+        }
+        
+        authRepository.resetPassword(email, otp, newPassword, new AuthRepository.RepositoryCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean result) {
+                authState.postValue(AuthState.PASSWORD_RESET_SUCCESS);
+            }
+            
+            @Override
+            public void onError(Exception e) {
+                authState.postValue(AuthState.error(e.getMessage()));
+            }
+        });
+    }
     
     public void resetState() {
         authState.setValue(AuthState.IDLE);
@@ -94,6 +161,8 @@ public class AuthViewModel extends ViewModel {
         public static final AuthState IDLE = new AuthState("IDLE", null, 0);
         public static final AuthState LOADING = new AuthState("LOADING", null, 0);
         public static final AuthState REGISTER_SUCCESS = new AuthState("REGISTER_SUCCESS", null, 0);
+        public static final AuthState OTP_SENT = new AuthState("OTP_SENT", null, 0);
+        public static final AuthState PASSWORD_RESET_SUCCESS = new AuthState("PASSWORD_RESET_SUCCESS", null, 0);
         
         private final String type;
         private final String message;
