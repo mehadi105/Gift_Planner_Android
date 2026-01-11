@@ -61,6 +61,12 @@
             android:id="@+id/action_dashboardFragment_to_occasionsFragment"
             app:destination="@id/occasionsFragment" />
         <action
+            android:id="@+id/action_dashboardFragment_to_giftHistoryFragment"
+            app:destination="@id/giftHistoryFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_budgetFragment"
+            app:destination="@id/budgetFragment" />
+        <action
             android:id="@+id/action_dashboardFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/dashboardFragment"
@@ -76,6 +82,16 @@
         android:id="@+id/occasionsFragment"
         android:name="com.giftplanner.ui.occasions.OccasionsFragment"
         android:label="Occasions Management" />
+
+    <fragment
+        android:id="@+id/giftHistoryFragment"
+        android:name="com.giftplanner.ui.gifthistory.GiftHistoryFragment"
+        android:label="Gift History" />
+
+    <fragment
+        android:id="@+id/budgetFragment"
+        android:name="com.giftplanner.ui.budget.BudgetFragment"
+        android:label="Budget Management" />
 
 </navigation>
 
