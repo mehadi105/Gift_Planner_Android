@@ -6,9 +6,11 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import androidx.annotation.NonNull;
+import com.giftplanner.data.dao.OccasionDao;
 import com.giftplanner.data.dao.PasswordResetOtpDao;
 import com.giftplanner.data.dao.PersonDao;
 import com.giftplanner.data.dao.UserDao;
+import com.giftplanner.data.entity.Occasion;
 import com.giftplanner.data.entity.PasswordResetOtp;
 import com.giftplanner.data.entity.Person;
 import com.giftplanner.data.entity.User;
@@ -17,14 +19,16 @@ import com.giftplanner.data.entity.User;
     entities = {
         User.class,
         Person.class,
+        Occasion.class,
         PasswordResetOtp.class
     },
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 public abstract class GiftPlannerDatabase extends RoomDatabase {
     public abstract UserDao userDao();
     public abstract PersonDao personDao();
+    public abstract OccasionDao occasionDao();
     public abstract PasswordResetOtpDao passwordResetOtpDao();
 
     private static volatile GiftPlannerDatabase INSTANCE;

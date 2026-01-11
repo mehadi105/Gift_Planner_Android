@@ -29,10 +29,17 @@ public class MainActivity extends AppCompatActivity {
             navController = navHostFragment.getNavController();
             
             AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.loginFragment
+                R.id.loginFragment,
+                R.id.dashboardFragment
             ).build();
             
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+            
+            // Check if user is already logged in
+            GiftPlannerApplication app = (GiftPlannerApplication) getApplication();
+            if (app.getSessionManager().isLoggedIn()) {
+                navController.navigate(R.id.dashboardFragment);
+            }
         }
     }
     

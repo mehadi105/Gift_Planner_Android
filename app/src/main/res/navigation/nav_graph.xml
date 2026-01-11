@@ -14,6 +14,11 @@
         <action
             android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
             app:destination="@id/forgotPasswordFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -46,9 +51,31 @@
     </fragment>
 
     <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.giftplanner.ui.dashboard.DashboardFragment"
+        android:label="Dashboard">
+        <action
+            android:id="@+id/action_dashboardFragment_to_peopleFragment"
+            app:destination="@id/peopleFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_occasionsFragment"
+            app:destination="@id/occasionsFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/dashboardFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
         android:id="@+id/peopleFragment"
         android:name="com.giftplanner.ui.people.PeopleFragment"
         android:label="People Management" />
+
+    <fragment
+        android:id="@+id/occasionsFragment"
+        android:name="com.giftplanner.ui.occasions.OccasionsFragment"
+        android:label="Occasions Management" />
 
 </navigation>
 
