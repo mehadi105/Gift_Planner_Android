@@ -76,8 +76,8 @@ public class LoginFragment extends Fragment {
                 
                 // Save session
                 app.getSessionManager().saveUserId(state.getUserId());
-                Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show();
-                // TODO: Navigate to dashboard when implemented
+                Navigation.findNavController(requireView())
+                    .navigate(R.id.action_loginFragment_to_dashboardFragment);
             } else if ("ERROR".equals(type)) {
                 binding.progressBar.setVisibility(View.GONE);
                 binding.btnLogin.setEnabled(true);

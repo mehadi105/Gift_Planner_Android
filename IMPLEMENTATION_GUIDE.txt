@@ -1,0 +1,295 @@
+PERSONAL GIFT PLANNER - ANDROID JAVA IMPLEMENTATION GUIDE
+============================================================
+
+## PROJECT STATUS
+
+✅ COMPLETED:
+- Project structure and build configuration (Java-based)
+- All 6 Entity classes (User, Person, Occasion, Budget, GiftHistory, PasswordResetOtp)
+- All 6 DAO interfaces (UserDao, PersonDao, OccasionDao, BudgetDao, GiftHistoryDao, PasswordResetOtpDao)
+- Room Database setup with foreign key support
+- All 5 Repository classes (AuthRepository, PeopleRepository, OccasionsRepository, BudgetRepository, GiftHistoryRepository)
+- Utility classes (PasswordHasher, SessionManager, EmailService, DateFormatter)
+- Application class
+- Resource files (strings.xml, colors.xml, themes.xml)
+- Navigation graph structure
+- Layout files for authentication screens
+
+⏳ TODO:
+- Fragment classes for all screens (Login, Register, ForgotPassword, ResetPassword, Dashboard, People, Occasions, GiftHistory, Budget)
+- ViewModels for each screen
+- Adapters for RecyclerViews (People list, Occasions table, Gift History table, etc.)
+- MainActivity implementation
+
+## ARCHITECTURE
+
+This app follows the MVVM (Model-View-ViewModel) architecture pattern:
+
+```
+UI Layer (Fragments) 
+    ↓
+ViewModel Layer (ViewModels with LiveData)
+    ↓
+Repository Layer (Repositories with ExecutorService for async)
+    ↓
+DAO Layer (Room DAOs)
+    ↓
+Database Layer (Room Database)
+```
+
+## KEY COMPONENTS ALREADY CREATED
+
+### 1. Entities (app/src/main/java/com/giftplanner/data/entity/)
+- User.java
+- Person.java
+- Occasion.java
+- Budget.java
+- GiftHistory.java
+- PasswordResetOtp.java
+
+### 2. DAOs (app/src/main/java/com/giftplanner/data/dao/)
+- UserDao.java
+- PersonDao.java
+- OccasionDao.java
+- BudgetDao.java
+- GiftHistoryDao.java
+- PasswordResetOtpDao.java
+
+### 3. Database (app/src/main/java/com/giftplanner/data/)
+- GiftPlannerDatabase.java - Main Room database with all entities
+
+### 4. Repositories (app/src/main/java/com/giftplanner/data/repository/)
+- AuthRepository.java - Handles login, registration, password reset
+- PeopleRepository.java - CRUD operations for people
+- OccasionsRepository.java - CRUD operations for occasions
+- BudgetRepository.java - Budget management and calculations
+- GiftHistoryRepository.java - Gift history CRUD operations
+
+### 5. Utilities (app/src/main/java/com/giftplanner/util/)
+- PasswordHasher.java - SHA-256 password hashing
+- SessionManager.java - SharedPreferences-based session management
+- EmailService.java - JavaMail integration for OTP emails
+- DateFormatter.java - Date formatting utilities
+
+### 6. Application (app/src/main/java/com/giftplanner/)
+- GiftPlannerApplication.java - Provides database and session manager instances
+
+### 7. Layouts (app/src/main/res/layout/)
+- activity_main.xml - Container for NavHostFragment
+- fragment_login.xml - Login screen layout
+- fragment_register.xml - Registration screen layout
+- fragment_forgot_password.xml - Forgot password screen layout
+- fragment_reset_password.xml - Reset password screen layout
+
+### 8. Navigation (app/src/main/res/navigation/)
+- nav_graph.xml - Navigation graph with all screens and actions
+
+## NEXT STEPS TO COMPLETE THE APP
+
+### 1. Create Fragment Classes
+
+You need to create Fragment classes for:
+
+a) Authentication Fragments:
+   - LoginFragment.java
+   - RegisterFragment.java
+   - ForgotPasswordFragment.java
+   - ResetPasswordFragment.java
+
+b) Main App Fragments:
+   - DashboardFragment.java
+   - PeopleFragment.java
+   - OccasionsFragment.java
+   - GiftHistoryFragment.java
+   - BudgetFragment.java
+
+### 2. Create ViewModel Classes
+
+Create ViewModel for each screen:
+   - AuthViewModel.java (shared by auth fragments)
+   - DashboardViewModel.java
+   - PeopleViewModel.java
+   - OccasionsViewModel.java
+   - GiftHistoryViewModel.java
+   - BudgetViewModel.java
+
+### 3. Create RecyclerView Adapters
+
+For list/table displays:
+   - PeopleAdapter.java
+   - OccasionsAdapter.java
+   - GiftHistoryAdapter.java
+   - BudgetHistoryAdapter.java
+
+### 4. Create Remaining Layouts
+
+   - fragment_dashboard.xml
+   - fragment_people.xml
+   - fragment_occasions.xml
+   - fragment_gift_history.xml
+   - fragment_budget.xml
+   - item_person.xml (for RecyclerView)
+   - item_occasion.xml (for RecyclerView)
+   - item_gift_history.xml (for RecyclerView)
+   - item_budget.xml (for RecyclerView)
+
+### 5. Implement MainActivity.java
+
+Complete the MainActivity with proper navigation setup.
+
+## FRAGMENT IMPLEMENTATION PATTERN
+
+Each Fragment should follow this pattern:
+
+```java
+public class ExampleFragment extends Fragment {
+    private FragmentExampleBinding binding;
+    private ExampleViewModel viewModel;
+    private GiftPlannerApplication app;
+    
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentExampleBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+    
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        app = (GiftPlannerApplication) requireActivity().getApplication();
+        viewModel = new ViewModelProvider(this, 
+            new ExampleViewModelFactory(app.getDatabase())).get(ExampleViewModel.class);
+        
+        setupUI();
+        observeData();
+    }
+    
+    private void setupUI() {
+        // Setup click listeners, etc.
+    }
+    
+    private void observeData() {
+        // Observe LiveData from ViewModel
+    }
+    
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+}
+```
+
+## VIEWMODEL IMPLEMENTATION PATTERN
+
+```java
+public class ExampleViewModel extends ViewModel {
+    private final ExampleRepository repository;
+    private final MutableLiveData<List<Item>> items = new MutableLiveData<>();
+    private final MutableLiveData<String> error = new MutableLiveData<>();
+    
+    public ExampleViewModel(ExampleRepository repository) {
+        this.repository = repository;
+    }
+    
+    public LiveData<List<Item>> getItems() {
+        return items;
+    }
+    
+    public LiveData<String> getError() {
+        return error;
+    }
+    
+    public void loadItems(long userId) {
+        repository.getAllItems(userId, new Repository.Callback<List<Item>>() {
+            @Override
+            public void onSuccess(List<Item> result) {
+                items.postValue(result);
+            }
+            
+            @Override
+            public void onError(Exception e) {
+                error.postValue(e.getMessage());
+            }
+        });
+    }
+}
+```
+
+## DATABASE FEATURES
+
+The app uses Room Database with:
+- Foreign key constraints with CASCADE delete
+- Indexes on frequently queried columns
+- Support for transactions
+- LiveData for reactive UI updates
+
+## SECURITY FEATURES
+
+- SHA-256 password hashing (never stores plain text passwords)
+- Session management with SharedPreferences
+- OTP-based password reset with 10-minute expiration
+- User data isolation (all queries filtered by user_id)
+
+## EMAIL CONFIGURATION
+
+The EmailService supports two modes:
+1. **Development Mode** (default): Prints OTP to Logcat
+2. **Production Mode**: Sends actual emails via SMTP
+
+To configure email, call:
+```java
+EmailService.configure("your-email@gmail.com", "your-app-password");
+```
+
+For Gmail, you need to:
+1. Enable 2-factor authentication
+2. Generate an app-specific password
+3. Use that password in the configuration
+
+## TESTING RECOMMENDATIONS
+
+1. Test with sample data for each feature
+2. Test cascade deletes (deleting a person should delete their occasions)
+3. Test date calculations for upcoming events
+4. Test budget calculations
+5. Test OTP expiration (10 minutes)
+6. Test session persistence across app restarts
+
+## CHARTS LIBRARY
+
+The app uses MPAndroidChart for budget analytics:
+- Pie chart for spending by person
+- Bar chart for spending by relation type
+
+See: https://github.com/PhilJay/MPAndroidChart
+
+## IMPORTANT NOTES
+
+1. All database operations run on background threads via ExecutorService
+2. UI updates happen via LiveData observers on the main thread
+3. ViewBinding is enabled for type-safe view access
+4. Navigation Component handles screen navigation
+5. Material Design Components are used throughout
+
+## BUILD REQUIREMENTS
+
+- Android SDK 24+ (minSdk)
+- Target SDK 34
+- Java 17
+- Room Database 2.6.1
+- Navigation Component 2.7.6
+- Material Components 1.11.0
+
+## NEXT DEVELOPMENT STEPS
+
+1. Start by implementing LoginFragment and AuthViewModel
+2. Test authentication flow thoroughly
+3. Implement DashboardFragment with summary statistics
+4. Implement PeopleFragment with CRUD operations
+5. Continue with remaining features in order
+
+The foundation is complete and ready for UI implementation!
+
+
